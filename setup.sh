@@ -188,26 +188,26 @@ then
 		if ! (dpkg --print-foreign-architectures | grep -q i386)
 		then
 			info "Adding i386 architectures..."
-			sudo dpkg --add-architecture i386 >>$OUTFILE 2>>$ERRFILE
-			sudo apt-get update >>$OUTFILE 2>>$ERRFILE
+			dpkg --add-architecture i386 >>$OUTFILE 2>>$ERRFILE
+			apt-get update >>$OUTFILE 2>>$ERRFILE
 		fi
 		info "Installing dependencies..."
-		sudo apt-get install -y $DEBS >>$OUTFILE 2>>$ERRFILE
+		apt-get install -y $DEBS >>$OUTFILE 2>>$ERRFILE
 	elif [ -e /etc/pacman.conf ]
 	then
 		if ! grep --quiet "^\[multilib\]" /etc/pacman.conf;
 		then
 			info "Adding i386 architectures..."
-			sudo sed 's/^\(#\[multilib\]\)/\[multilib\]/' </etc/pacman.conf >/tmp/pacman.conf
-			sudo sed '/^\[multilib\]/{n;s/^#//}' </tmp/pacman.conf >/etc/pacman.conf
-			sudo pacman -Syu >>$OUTFILE 2>>$ERRFILE
+			sed 's/^\(#\[multilib\]\)/\[multilib\]/' </etc/pacman.conf >/tmp/pacman.conf
+			sed '/^\[multilib\]/{n;s/^#//}' </tmp/pacman.conf >/etc/pacman.conf
+			pacman -Syu >>$OUTFILE 2>>$ERRFILE
 		fi
 		info "Installing dependencies..."
-		sudo pacman -S --noconfirm --needed $ARCHDEBS >>$OUTFILE 2>>$ERRFILE
+		pacman -S --noconfirm --needed $ARCHDEBS >>$OUTFILE 2>>$ERRFILE
 	elif [ -e /etc/fedora-release ]
 	then
 		info "Installing dependencies..."
-		sudo dnf install -y $RPMS #>>$OUTFILE 2>>$ERRFILE
+		dnf install -y $RPMS #>>$OUTFILE 2>>$ERRFILE
 	elif [ $IS_MACOS -eq 1 ]
 	then
 		if ! which brew > /dev/null;
@@ -241,7 +241,7 @@ fi
 info "Enabling virtualenvwrapper."
 if [ -e /etc/pacman.conf ]
 then
-	sudo pacman -S --needed python-virtualenvwrapper >>$OUTFILE 2>>$ERRFILE
+	pacman -S --needed python-virtualenvwrapper >>$OUTFILE 2>>$ERRFILE
 	set +e
 	source /usr/bin/virtualenvwrapper.sh >>$OUTFILE 2>>$ERRFILE
 	set -e
