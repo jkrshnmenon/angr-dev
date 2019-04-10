@@ -428,11 +428,11 @@ then
 		warning "\"I know this is a bad idea.\" (without quotes) and press enter"
 		warning "to continue."
 
-		read ans
-		if [ "$ans" != "I know this is a bad idea." ]
-		then
-			exit 1
-		fi
+		# read ans
+		# if [ "$ans" != "I know this is a bad idea." ]
+		# then
+		#	exit 1
+		# fi
 	fi
 
 	if [ $VERBOSE -eq 1 ]
