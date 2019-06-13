@@ -48,10 +48,10 @@ fi
 
 DEBS=${DEBS-virtualenvwrapper python3-pip python3-dev python3-setuptools build-essential libxml2-dev libxslt1-dev git libffi-dev cmake libreadline-dev libtool debootstrap debian-archive-keyring libglib2.0-dev libpixman-1-dev qtdeclarative5-dev binutils-multiarch nasm libssl-dev libc6:i386 libgcc1:i386 libstdc++6:i386 libtinfo5:i386 zlib1g:i386 openjdk-8-jdk}
 HOMEBREW_DEBS=${HOMEBREW_DEBS-python3 libxml2 libxslt libffi cmake libtool glib binutils nasm capstone unicorn}
-ARCHDEBS=${ARCHDEBS-python-virtualenvwrapper python-pip libxml2 libxslt git libffi cmake readline libtool debootstrap glib2 pixman qt4 binutils binutils nasm lib32-glibc lib32-gcc-libs lib32-zlib lib32-ncurses}
+ARCHDEBS=${ARCHDEBS-python-virtualenvwrapper python-pip libxml2 libxslt git libffi cmake readline libtool debootstrap glib2 pixman qt5-base binutils binutils nasm lib32-glibc lib32-gcc-libs lib32-zlib lib32-ncurses}
 ARCHCOMDEBS=${ARCHCOMDEBS}
 RPMS=${RPMS-gcc gcc-c++ make python3-virtualenvwrapper python3-pip python3-devel python3-setuptools libxml2-devel libxslt-devel git libffi-devel cmake readline-devel libtool debootstrap debian-keyring glib2-devel pixman-devel qt5-qtdeclarative-devel binutils-x86_64-linux-gnu nasm openssl-devel python2 glibc.i686 libgcc.i686 libstdc++.i686 ncurses-compat-libs.i686 zlib.i686 java-1.8.0-openjdk-devel}
-REPOS=${REPOS-idalink cooldict mulpyplexer monkeyhex superstruct archinfo vex pyvex cle claripy angr angr-management angrop angr-doc binaries ailment pysoot}
+REPOS=${REPOS-idalink cooldict mulpyplexer monkeyhex archinfo vex pyvex cle claripy angr angr-management angrop angr-doc binaries ailment pysoot}
 declare -A EXTRA_DEPS
 EXTRA_DEPS["angr"]="unicorn"
 EXTRA_DEPS["pyvex"]="--pre capstone"
@@ -231,6 +231,9 @@ then
 elif [ -e /etc/fedora-release ]
 then
 	[ $(rpm -q $RPMS  2>&1 | grep "is not installed" | wc -l) -ne 0 ] && error "Please install the following packages: $RPMS"
+elif [ -e /etc/NIXOS ]
+then
+	[ -z "$IN_NIX_SHELL" ] && error "Please run in the provided shell.nix"
 elif [ $IS_MACOS -eq 1 ]
 then
 	[ $(brew ls --versions $HOMEBREW_DEBS | wc -l) -ne $(echo $HOMEBREW_DEBS | wc -w) ] && error "Please install the following packages from homebrew: $HOMEBREW_DEBS"
@@ -241,7 +244,7 @@ fi
 info "Enabling virtualenvwrapper."
 if [ -e /etc/pacman.conf ]
 then
-	pacman -S --needed python-virtualenvwrapper >>$OUTFILE 2>>$ERRFILE
+	sudo pacman -S --needed --noconfirm python-virtualenvwrapper >>$OUTFILE 2>>$ERRFILE
 	set +e
 	source /usr/bin/virtualenvwrapper.sh >>$OUTFILE 2>>$ERRFILE
 	set -e
@@ -249,6 +252,11 @@ elif [ -e /etc/fedora-release ]
 then
 	set +e
 	source /usr/bin/virtualenvwrapper-3.sh >>$OUTFILE 2>>$ERRFILE
+	set -e
+elif [ -e /etc/NIXOS ]
+then
+	set +e
+	source $(command -v virtualenvwrapper.sh) >>$OUTFILE 2>>$ERRFILE
 	set -e
 else
 	python3 -m pip install virtualenvwrapper >>$OUTFILE 2>>$ERRFILE
@@ -453,7 +461,7 @@ then
 	then
 		python2=/usr/bin/python
 	else
-		python2=$(which python2)
+		python2=$(which python2 || echo)
 	fi
 	if [ ! -z "$python2" ]
 	then
@@ -492,7 +500,7 @@ then
 		pip_install -e keystone-engine
 		pip3 show keystone-engine >> $OUTFILE 2>> $ERRFILE || error "Unable to install keystone-engine."
 	fi
-	if pip3 install ipython pylint ipdb nose nose-timer coverage flaky sphinx sphinx_rtd_theme recommonmark cvc4-solver 'requests[security]' >> $OUTFILE 2>> $ERRFILE
+	if pip3 install ipython pylint ipdb nose nose-timer coverage flaky >> $OUTFILE 2>> $ERRFILE
 	then
 		info "Success!"
 	else
